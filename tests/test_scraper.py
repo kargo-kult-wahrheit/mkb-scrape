@@ -55,6 +55,40 @@ class ParseHelpersTests(unittest.TestCase):
         self.assertEqual("tekst", _strip_labels("Naziv: tekst"))
         self.assertEqual("tekst", _strip_labels("latinski - tekst"))
 
+    def test_parse_list_group_structure(self) -> None:
+        html = """
+        <ul class="list-group mb-3">
+            <li class="list-group-item">
+                <div class="col-sm-2 col_first"><strong>A00</strong></div>
+                <div class="col-sm-10 col_last">
+                    <strong>Kolera NOVA</strong><br>
+                    Cholera
+                </div>
+            </li>
+            <li class="list-group-item">
+                <div class="col-sm-2 col_first"><strong>A00.0</strong></div>
+                <div class="col-sm-10 col_last">
+                    <strong>Kolera, uzročnik Vibrio cholerae 01,biotip cholerae</strong><br>
+                    Cholera classica
+                </div>
+            </li>
+        </ul>
+        """
+        soup = self._soup(html)
+
+        entries = self.scraper._parse_from_list_groups(soup)
+
+        self.assertEqual(2, len(entries))
+        self.assertEqual("A00", entries[0].code)
+        self.assertEqual("Kolera NOVA", entries[0].serbian)
+        self.assertEqual("Cholera", entries[0].latin)
+        self.assertEqual("A00.0", entries[1].code)
+        self.assertEqual(
+            "Kolera, uzročnik Vibrio cholerae 01,biotip cholerae",
+            entries[1].serbian,
+        )
+        self.assertEqual("Cholera classica", entries[1].latin)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -219,6 +219,14 @@ class MKBScraper:
         )
         parsed.extend(structured_entries)
 
+        list_group_entries = self._parse_from_list_groups(soup)
+        LOGGER.info(
+            "Parsed %d entries from list-group blocks on %s",
+            len(list_group_entries),
+            source,
+        )
+        parsed.extend(list_group_entries)
+
         heading_entries = self._parse_from_heading_blocks(soup)
         LOGGER.info(
             "Parsed %d entries from heading blocks on %s",
@@ -324,6 +332,43 @@ class MKBScraper:
                 else ""
             )
             entries.append(MKBEntry(code_text, serbian_text, latin_text))
+        return entries
+
+    def _parse_from_list_groups(self, soup: BeautifulSoup) -> list[MKBEntry]:
+        entries: list[MKBEntry] = []
+        for item in soup.select("li.list-group-item"):
+            code_container = item.select_one(".col_first")
+            description_container = item.select_one(".col_last")
+
+            if not code_container or not description_container:
+                continue
+
+            code_element = code_container.find(["strong", "b"]) or code_container
+            code_text = _strip_labels(
+                _normalize_text(code_element.get_text(" ", strip=True))
+            )
+            if not _is_code(code_text):
+                continue
+
+            serbian_text = ""
+            latin_text = ""
+
+            description_element = description_container.find(["strong", "b"])
+            if description_element:
+                serbian_text = _strip_labels(
+                    _normalize_text(description_element.get_text(" ", strip=True))
+                )
+                latin_text = _extract_latin_from_siblings(description_element)
+            else:
+                serbian_text = _strip_labels(
+                    _normalize_text(description_container.get_text(" ", strip=True))
+                )
+
+            if serbian_text == code_text:
+                serbian_text = ""
+
+            entries.append(MKBEntry(code_text, serbian_text, latin_text))
+
         return entries
 
     def _parse_from_heading_blocks(self, soup: BeautifulSoup) -> list[MKBEntry]:
@@ -486,6 +531,23 @@ def _extract_following_latin(element: Tag) -> str:
             return _strip_labels(text)
         if sibling.name and sibling.name.startswith("h"):
             break
+    return ""
+
+
+def _extract_latin_from_siblings(element: Tag) -> str:
+    for sibling in element.next_siblings:
+        if isinstance(sibling, str):
+            candidate = _strip_labels(_normalize_text(sibling))
+            if candidate:
+                return candidate
+            continue
+        if not isinstance(sibling, Tag):
+            continue
+        if sibling.name == "br":
+            continue
+        text = _strip_labels(_normalize_text(sibling.get_text(" ", strip=True)))
+        if text:
+            return text
     return ""
 
 

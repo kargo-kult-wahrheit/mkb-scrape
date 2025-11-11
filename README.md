@@ -1,7 +1,7 @@
 # MKB Scraper
 
 This project contains a small Python utility that downloads the full list of
-MKB-10 (ICD-10) entries from [stetoskop.info](https://www.stetoskop.info/mkb)
+MKB-10 (ICD-10) entries from [stetoskop.info](https://www.stetoskop.info/medjunarodna-klasifikacija-bolesti)
 and stores them in a CSV file. The script was written for the Institute of
 Public Health of Serbia "Dr Milan Jovanović Batut" to facilitate internal use of
 the dataset.

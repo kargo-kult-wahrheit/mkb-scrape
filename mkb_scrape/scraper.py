@@ -29,7 +29,7 @@ BASE_URL = "https://www.stetoskop.info"
 # Entry point for the ICD-10 catalogue on stetoskop.info. The portal recently
 # reorganized its URLs under ``/medjunarodna-klasifikacija-bolesti`` instead of
 # the previous ``/mkb`` path, so we default to the new location here.
-INDEX_PATH = "/medjunarodna-klasifikacija-bolesti"
+INDEX_PATH = "/"
 INDEX_URL = f"{BASE_URL}{INDEX_PATH}"
 
 LOGGER = logging.getLogger(__name__)
